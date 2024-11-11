@@ -2,7 +2,7 @@
 
 /* Program name: linkedQueueType.h
 *  Author: Kyle Ingersoll
-*  Date last updated: 11/10/2024
+*  Date last updated: 11/11/2024
 *  Purpose: Create a class template for linkedQueueType, which will be used in other programs.
 */
 
@@ -15,7 +15,7 @@ class linkedQueueType : public unorderedLinkedList<Type> {
     /* Copied the method headings and attributes over from linkedQueue.h */
 public:
     const linkedQueueType<Type>& operator=
-        (const linkedQueueType<Type>&);
+        (const linkedQueueType<Type>& otherQueue);
     //Overload the assignment operator.
 
     bool isEmptyQueue() const;
