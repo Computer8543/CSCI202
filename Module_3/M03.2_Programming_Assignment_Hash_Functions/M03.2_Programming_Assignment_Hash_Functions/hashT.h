@@ -2,13 +2,15 @@
 
 /* Program Name: hashT.h
 *  Author: Kyle Ingersoll
-*  Date last updated: 11/14/2024
+*  Date last updated: 11/16/2024
 *  Purpose: To create a hash table class utilizing chaining to deal with hash collisions.
 */
 
 #include <iostream>
+#include <functional>
 #include "unorderedLinkedList.h"
 
+/* Note: This is all based on ChatGPT's pseudocode, althrough some changes were made to better fit the C++ language. */
 template <class Type, class HashMethod> // HashMethod is meant to support function pointers to the hashing methods
 class hashT {
 private:
@@ -31,6 +33,16 @@ public:
 	Type retrieve(Type key, HashMethod hashingMethod) throw(std::out_of_range);
 	void remove(Type key, HashMethod hashingMethod);
 	void print();
+
+	// function prototypes for 3 different hashing methods
+	int moduloHashMethod(Type key, int hashTableSize);
+	int midSquareHashMethod(Type key, int hashTableSize);
+	int foldingHashMethod(Type key, int hashTableSize);
+
+	// polymorphic wrappers for hash methods to fit within HashMethod
+	static const std::function<int(Type, int)> hashMethod1;
+	static const std::function<int(Type, int)> hashMethod2;
+	static const std::function<int(Type, int)> hashMethod3;
 };
 
 /* The constructor for the class */
@@ -154,3 +166,68 @@ void hashT<Type, HashMethod>::print() {
 	}
 }
 
+/* The modulo hash method */
+template <class Type, class HashMethod>
+int hashT<Type, HashMethod>::moduloHashMethod(Type key, int hashTableSize) {
+	return static_cast<int>((key % hashTableSize));
+}
+
+/* The mid-square hash method */
+template <class Type, class HashMethod>
+int hashT<Type, HashMethod>::midSquareHashMethod(Type key, int hashTableSize) {
+	// convert key into string
+	std::string keyString = static_cast<std::string>(key);
+
+	// store key length in variable
+	int keyDigitLength = keyString.length();
+
+	// square the key
+	Type squaredKey = (key * key);
+
+	// make a string equivalent of the squared key to extract the length of it
+	std::string squaredKeyString = static_cast<std::string>(squaredKey);
+
+	// then find squared key length through the length function
+	int squaredKeyDigitLength = squaredKeyString.length();
+
+	// get the mid-square as a substring of squaredKeyString
+	std::string midSquareSubString = squaredKeyString.substr((squaredKeyDigitLength / 2), keyDigitLength);
+
+	// convert midSquareSubString into an integer
+	int midSquareInteger = static_cast<int>(midSquareSubString);
+
+	// return the hash of the mid-square
+	return (midSquareInteger % hashTableSize);
+
+}
+
+/* The folding hash method */
+template <class Type, class HashMethod>
+int hashT<Type, HashMethod>::foldingHashMethod(Type key, int hashTableSize) {
+	// convert key into string
+	std::string keyString = static_cast<std::string>(key);
+
+	// initialize sum of digits in key variable
+	int sumDigitsInKey = 0;
+
+	// we loop across the keyString, summing up the digits in the key
+	for (int i = 0; i < keyString.length(); i++) {
+		sumDigitsInKey += static_cast<int>(keyString.at(i));
+	}
+
+	// we then return the hash of the sum of digits in the key
+	return (sumDigitsInKey % hashTableSize);
+}
+
+/* Define static constants */
+/* Polymorphic wrapper for Modulo Hash Method */
+template <class Type, class HashMethod>
+const std::function<int(Type, int)> hashT<Type, HashMethod>::hashMethod1 = moduloHashMethod<Type, int>;
+
+/* Polymorphic Wrapper for mid-square hash method */
+template <class Type, class HashMethod>
+const std::function<int(Type, int)> hashT<Type, HashMethod>::hashMethod2 = midSquareHashMethod<Type, int>;
+
+/* Polymorphic wrapper for folding hash method */
+template <class Type, class HashMethod>
+const std::function<int(Type, int)> hashT<Type, HashMethod>::hashMethod3 = foldingHashMethod<Type, int>;
