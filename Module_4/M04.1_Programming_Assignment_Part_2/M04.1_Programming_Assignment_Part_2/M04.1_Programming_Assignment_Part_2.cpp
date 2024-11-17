@@ -8,7 +8,17 @@
 #include <string>
 #include <map>
 
-static const std::map<std::string, std::string> stateAndCapitalMap{
+// custom comparator to make map case insensitive copied from StackOverflow
+// link: https://stackoverflow.com/questions/19102195/how-to-make-stlmap-key-case-insensitive
+// note: since this is a struct, not a class, I technically don't have to make a UML Class Diagram and a Use Case Diagram for this
+struct comparator {
+    bool operator() (const std::string& lhs, const std::string& rhs) const {
+        return _stricmp(lhs.c_str(), rhs.c_str()) < 0;
+    }
+};
+
+// all 50 states in the United States and their capitals in a case insensitive map for use in the main program
+static const std::map<std::string, std::string, comparator> stateAndCapitalMap{
     {"Alabama", "Montgomery"}, {"Alaska", "Juneau"}, {"Arizona", "Phoenix"},
     {"Arkansas", "Little Rock"}, {"California", "Sacramento"}, {"Colorado", "Denver"},
     {"Connecticut", "Hartford"}, {"Delaware", "Dover"}, {"Florida", "Tallahassee"},
@@ -27,8 +37,45 @@ static const std::map<std::string, std::string> stateAndCapitalMap{
     {"Virginia", "Richmond"}, {"Washington", "Olympia"}, {"West Virginia", "Charleston"},
     {"Wisconsin", "Madison"}, {"Wyoming", "Cheyenne"}
 };
+
 int main()
 {
+    // initialize variable
+    std::string userInputState;
+
+    // tell user purpose of program 
+    std::cout << "This program allows you to enter in the full name of a state in the United States and get the state capital in response as many times as desired." << std::endl;
+
+    // prompt user to enter in the state
+    std::cout << "Enter in the full name (not the abbreviation) of the state (enter -1 to exit out of the program): ";
+    std::cin >> userInputState;
+    std::cout << std::endl;
+
+    // create while loop to allow user to input states and get their capitols multiple times
+    while (userInputState != "-1") {
+        // if the user input corresponds to a full name of a state in the United States, give the user the state capitol 
+        // and then reprompt them to either enter in the full name of another state or exit out of the program
+        if ((stateAndCapitalMap.find(userInputState) != stateAndCapitalMap.end())) {
+            std::cout << "The state capitol is: " << stateAndCapitalMap.at(userInputState) << std::endl;
+
+            // prompt user to enter in the state
+            std::cout << "Enter in the full name (not the abbreviation) of the state (enter -1 to exit out of the program): ";
+            std::cin >> userInputState;
+            std::cout << std::endl;
+            continue;
+        }
+        else {
+            // output error message, and then reprompt user to enter in the full name of a state in the United States or exit out of the program
+            std::cerr << "What you entered was not a valid full name of a state in the United States. Please try again." << std::endl;
+
+            // prompt user to enter in the state
+            std::cout << "Enter in the full name (not the abbreviation) of the state (enter -1 to exit out of the program): ";
+            std::cin >> userInputState;
+            std::cout << std::endl;
+            continue;
+        }
+    }
+    
 
     // end program normally
     return 0;
