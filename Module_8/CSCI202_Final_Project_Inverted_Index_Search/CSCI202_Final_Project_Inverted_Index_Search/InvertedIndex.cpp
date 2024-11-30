@@ -5,88 +5,53 @@
 */
 
 #include "InvertedIndex.h"
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <cctype>
-#include <stdexcept>
 
-// Constructor: Initialize with predefined stop words
-InvertedIndex::InvertedIndex() {
-    stopWords = { "the", "and", "is", "in", "at", "of", "on", "a", "to", "an" };
-}
-
-// Helper: Convert text to lowercase
-std::string InvertedIndex::toLower(const std::string& str) const {
-    std::string result = str;
-    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
-    return result;
-}
-
-// Helper: Remove punctuation from a word
-std::string InvertedIndex::removePunctuation(const std::string& word) const {
-    std::string cleanWord;
-    std::copy_if(word.begin(), word.end(), std::back_inserter(cleanWord),
-        [](char c) { return std::isalnum(c); });
-    return cleanWord;
-}
-
-// Helper: Tokenize a line into words
-std::vector<std::string> InvertedIndex::tokenize(const std::string& line) const {
-    std::istringstream stream(line);
-    std::string word;
-    std::vector<std::string> words;
-
-    while (stream >> word) {
-        word = removePunctuation(word); // Remove punctuation
-        word = toLower(word);           // Normalize case
-        if (!word.empty() && stopWords.find(word) == stopWords.end()) {
-            words.push_back(word); // Exclude stop words
-        }
-    }
-    return words;
-}
-
-// Build the inverted index from a file
-void InvertedIndex::buildIndex(const std::string& filename) {
-    std::ifstream file(filename);
+// Add file to populate the index
+void InvertedIndex::addFile(const std::string& filePath) {
+    std::ifstream file(filePath);
     if (!file.is_open()) {
-        throw std::runtime_error("Error: Could not open file.");
+        throw std::runtime_error("Failed to open file: " + filePath);
     }
 
-    std::string line;
-    int lineNumber = 0;
+    std::string word;
+    int indexNumber = 0;
+    while (file >> word) {
+        // Normalize word to lowercase (optional)
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
 
-    while (std::getline(file, line)) {
-        lineNumber++; // Increment line numbers
-        std::vector<std::string> words = tokenize(line);
-
-        for (const std::string& word : words) {
-            index[word].insert(lineNumber); // Insert line number into the set
-        }
+        // Insert the word and associate it with the index number
+        index[word].insert(indexNumber);
+        ++indexNumber;
     }
+
     file.close();
 }
 
-// Search for a word in the inverted index
+// Exact search
 std::set<int> InvertedIndex::search(const std::string& word) const {
-    std::string lowerWord = toLower(word);
-    auto it = index.find(lowerWord);
-
+    auto it = index.find(word);
     if (it != index.end()) {
-        return it->second; // Return the set of line numbers
+        return it->second; // Return the set of indices
     }
     return {}; // Return an empty set if the word is not found
 }
 
-// Print the entire inverted index
-void InvertedIndex::printIndex() const {
-    for (const auto& entry : index) {
-        std::cout << entry.first << ": ";
-        for (int line : entry.second) {
-            std::cout << line << " ";
+// Fuzzy search
+std::set<int> InvertedIndex::fuzzySearch(const std::string& query, int maxDistance) const {
+    FuzzyMatcher matcher(index); // Pass the index to FuzzyMatcher
+    std::vector<std::string> matches = matcher.match(query, maxDistance);
+
+    // Collect indices for all matching words
+    std::set<int> resultIndices;
+    for (const auto& match : matches) {
+        auto it = index.find(match);
+        if (it != index.end()) {
+            resultIndices.insert(it->second.begin(), it->second.end());
         }
-        std::cout << "\n";
     }
+
+    return resultIndices;
 }

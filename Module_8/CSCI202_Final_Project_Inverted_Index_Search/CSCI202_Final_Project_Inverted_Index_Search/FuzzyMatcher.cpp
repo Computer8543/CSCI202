@@ -7,9 +7,10 @@
 #include "FuzzyMatcher.h"
 #include <algorithm>
 #include <vector>
+#include <set>
 
 // Constructor
-FuzzyMatcher::FuzzyMatcher(const std::unordered_map<std::string, std::vector<int>>& index)
+FuzzyMatcher::FuzzyMatcher(const std::unordered_map<std::string, std::set<int>>& index)
     : index(index) {}
 
 // Levenshtein Distance implementation

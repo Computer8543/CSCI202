@@ -7,34 +7,26 @@
 *  Purpose: To create a class prototype for the inverted index data structure
 */
 
+#include "FuzzyMatcher.h"
 #include <unordered_map>
-#include <unordered_set>
 #include <set>
-#include <vector>
 #include <string>
+#include <vector>
 
 class InvertedIndex {
 private:
-    std::unordered_map<std::string, std::set<int>> index; // Word -> Set of line numbers
-    std::unordered_set<std::string> stopWords;
-
-    // Helper functions
-    std::string toLower(const std::string& str) const;
-    std::string removePunctuation(const std::string& word) const;
-    std::vector<std::string> tokenize(const std::string& line) const;
+    // Map each word to a set of index numbers for uniqueness and fast lookups
+    std::unordered_map<std::string, std::set<int>> index;
 
 public:
-    // Constructor
-    InvertedIndex();
+    // Add file and populate the index
+    void addFile(const std::string& filePath);
 
-    // Build index from a file
-    void buildIndex(const std::string& filename);
-
-    // Search for a word in the index
+    // Perform exact search
     std::set<int> search(const std::string& word) const;
 
-    // Print the entire index
-    void printIndex() const;
+    // Perform fuzzy search and return matching indices
+    std::set<int> fuzzySearch(const std::string& query, int maxDistance) const;
 };
 
 #endif // INVERTEDINDEX_H

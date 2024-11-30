@@ -9,19 +9,20 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <unordered_map>
 
 class FuzzyMatcher {
 private:
     // The inverted index to be used for matching
-    std::unordered_map<std::string, std::vector<int>> index;
+    std::unordered_map<std::string, std::set<int>> index;
 
     // Helper method to calculate Levenshtein Distance
     static int levenshteinDistance(const std::string& s1, const std::string& s2);
 
 public:
     // Constructor to initialize the FuzzyMatcher with an index
-    explicit FuzzyMatcher(const std::unordered_map<std::string, std::vector<int>>& index);
+    explicit FuzzyMatcher(const std::unordered_map<std::string, std::set<int>>& index);
 
     // Method to perform fuzzy matching
     std::vector<std::string> match(const std::string& query, int maxDistance) const;
