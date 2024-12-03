@@ -25,7 +25,7 @@ public:
     explicit FuzzyMatcher(const std::unordered_map<std::string, std::set<int>>& index);
 
     // Method to perform fuzzy matching
-    std::vector<std::string> match(const std::string& query, int maxDistance) const;
+    std::set<std::string> match(const std::string& query, int maxDistance) const;
 };
 
 #endif // FUZZYMATCHER_H
