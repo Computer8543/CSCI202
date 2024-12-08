@@ -64,39 +64,53 @@ void Screen2::createScreen(HINSTANCE hInstance, const std::string& filePath) {
 
     screen2Instance = this; // Assign this instance to the global pointer
 
-    // UI elements
-    CreateWindow(L"STATIC", L"Input word(s) you want to search for:", WS_VISIBLE | WS_CHILD,
-        20, 20, 300, 20, hwnd, nullptr, hInstance, nullptr);
-
-    hwndSearchBox = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-        20, 50, 300, 20, hwnd, (HMENU)1, hInstance, nullptr);
-
-    CreateWindow(L"STATIC", L"Exact Results:", WS_VISIBLE | WS_CHILD,
-        20, 90, 100, 20, hwnd, nullptr, hInstance, nullptr);
-
-    hwndExactResults = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-        20, 120, 350, 400, hwnd, (HMENU)2, hInstance, nullptr);
-
-    CreateWindow(L"STATIC", L"Fuzzy Results:", WS_VISIBLE | WS_CHILD,
-        400, 90, 100, 20, hwnd, nullptr, hInstance, nullptr);
-
-    hwndFuzzyResults = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-        400, 120, 350, 400, hwnd, (HMENU)3, hInstance, nullptr);
-
-    CreateWindow(L"BUTTON", L"Search", WS_VISIBLE | WS_CHILD,
-        330, 50, 80, 20, hwnd, (HMENU)4, hInstance, nullptr);
+   
 
     ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
 }
 
 LRESULT CALLBACK Screen2WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    switch (message) {
-    case WM_COMMAND:
-        if (LOWORD(wParam) == 4) { // Search button clicked
-            wchar_t buffer[256];
-            GetWindowTextW(screen2Instance->gethwndSearchBox(), buffer, 256);
+    // initialize window variables
+    static HWND hwndSearchBox, hwndExactResults, hwndFuzzyResults;
 
-            // Convert wchar_t to std::string
+    switch (message) {
+    case WM_CREATE: {
+
+        // UI elements
+        CreateWindowW(L"STATIC", L"Input word(s) you want to search for:", WS_VISIBLE | WS_CHILD,
+            20, 20, 300, 20, hwnd, nullptr, nullptr, nullptr);
+
+        hwndSearchBox = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+            20, 50, 300, 20, hwnd, (HMENU)1, nullptr, nullptr);
+
+        CreateWindowW(L"STATIC", L"Exact Results:", WS_VISIBLE | WS_CHILD,
+            20, 90, 100, 20, hwnd, nullptr, nullptr, nullptr);
+
+        hwndExactResults = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+            20, 120, 350, 400, hwnd, (HMENU)2, nullptr, nullptr);
+
+        CreateWindowW(L"STATIC", L"Fuzzy Results:", WS_VISIBLE | WS_CHILD,
+            400, 90, 100, 20, hwnd, nullptr, nullptr, nullptr);
+
+        hwndFuzzyResults = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+            400, 120, 350, 400, hwnd, (HMENU)3, nullptr, nullptr);
+
+        CreateWindowW(L"BUTTON", L"Search", WS_VISIBLE | WS_CHILD,
+            330, 50, 80, 20, hwnd, (HMENU)4, nullptr, nullptr);
+        
+        break;
+    }
+    case WM_COMMAND: {
+        if (LOWORD(wParam) == 4) { // Search button clicked
+
+            // initialize buffer
+            wchar_t buffer[1024];
+
+            // Access hwndSearchBox through the global screen2Instance
+            GetWindowTextW(hwndSearchBox, buffer, sizeof(buffer) / sizeof(wchar_t));  // Retrieve the text
+
+            // Convert wchar_t to std::string (if needed)
             std::wstring ws(buffer);
             std::string searchText(ws.begin(), ws.end());
 
@@ -107,21 +121,25 @@ LRESULT CALLBACK Screen2WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             screen2Instance->performSearch(hwnd, searchText, maxDistance);
         }
         break;
-
-    case WM_CLOSE:
+    }
+    case WM_CLOSE: {
+        // Just destroy the window without quitting the application
         DestroyWindow(hwnd);
         break;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
+    }
+    case WM_DESTROY: {
+        // Ensure no quit message is posted
+        // Removed the PostQuitMessage() line to keep the window open
         break;
-
-    default:
+    }
+    default: {
         return DefWindowProc(hwnd, message, wParam, lParam);
+    }
     }
 
     return 0;
 }
+
 
 void Screen2::performSearch(HWND hwnd, const std::string& searchText, int maxDistance) {
     // Perform exact match search: retrieve line indices
