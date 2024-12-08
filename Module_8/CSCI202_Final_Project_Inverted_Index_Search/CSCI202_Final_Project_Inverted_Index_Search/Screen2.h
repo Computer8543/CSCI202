@@ -11,6 +11,7 @@
 #include "InvertedIndex.h"
 #include "FuzzyMatcher.h"
 #include <windows.h>
+#include <memory>
 
 class Screen2 {
 public:
@@ -25,8 +26,9 @@ private:
     HWND hwndExactResults;
     HWND hwndFuzzyResults;
     HWND hwndSearchBox;
+
     InvertedIndex invertedIndex; // Instance of the InvertedIndex class
-    FuzzyMatcher fuzzyMatcher;   // Instance of the FuzzyMatcher class
+    std::unique_ptr<FuzzyMatcher> fuzzyMatcher;          // Pointer for deferred initialization
 };
 
 #endif // SCREEN2_H

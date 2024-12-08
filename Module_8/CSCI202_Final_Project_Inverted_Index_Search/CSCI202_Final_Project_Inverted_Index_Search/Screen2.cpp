@@ -25,7 +25,7 @@ Screen2::Screen2()
     hwndFuzzyResults(nullptr),
     hwndSearchBox(nullptr),
     invertedIndex(), // Default initialization
-    fuzzyMatcher(invertedIndex.getIndex()) // Initialize fuzzy matcher with an empty index
+    fuzzyMatcher(nullptr) // No initialization yet
 {
     // Default constructor does not need to do anything else
 }
@@ -34,8 +34,12 @@ Screen2::Screen2()
 void Screen2::createScreen(HINSTANCE hInstance, const std::string& filePath) {
     try {
         // Initialize the inverted index and fuzzy matcher
-        invertedIndex.addFile(filePath); // Populate the index from the file
-        fuzzyMatcher = FuzzyMatcher(invertedIndex.getIndex()); // Initialize the fuzzy matcher with the index
+        // 
+        // Populate the index from the file
+        invertedIndex.addFile(filePath);
+
+        // Initialize fuzzy matcher only after invertedIndex is populated
+        fuzzyMatcher = std::make_unique<FuzzyMatcher>(invertedIndex.getIndex());
     }
     catch (const std::exception& e) {
         MessageBoxA(nullptr, e.what(), "Error", MB_ICONERROR);
@@ -114,6 +118,9 @@ LRESULT CALLBACK Screen2WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             std::wstring ws(buffer);
             std::string searchText(ws.begin(), ws.end());
 
+            // transform search text to lowercase for compatibility with the map, which also stores words in lowercase
+            std::transform(searchText.begin(), searchText.end(), searchText.begin(), ::tolower);
+
             // Example maxDistance value (can be replaced with a user-provided input)
             int maxDistance = 2;
 
@@ -148,17 +155,22 @@ void Screen2::performSearch(HWND hwnd, const std::string& searchText, int maxDis
     // Highlight exact match results in the exact results box
     highlightResults(hwndExactResults, exactMatches, invertedIndex);
 
-    // Perform fuzzy match search: retrieve matching words
-    std::set<std::string> fuzzyMatches = fuzzyMatcher.match(searchText, maxDistance);
+    if (fuzzyMatcher) {
+        // Perform fuzzy match search: retrieve matching words
+        std::set<std::string> fuzzyMatches = fuzzyMatcher->match(searchText, maxDistance);
 
-    // Prepare fuzzy results text
-    std::wstring fuzzyResultsText;
-    for (const auto& word : fuzzyMatches) {
-        fuzzyResultsText += std::wstring(word.begin(), word.end()) + L"\n";
+        // Prepare fuzzy results text
+        std::wstring fuzzyResultsText;
+        for (const auto& word : fuzzyMatches) {
+            fuzzyResultsText += std::wstring(word.begin(), word.end()) + L"\n";
+        }
+
+        // Display fuzzy matches in the fuzzy results box
+        SetWindowTextW(hwndFuzzyResults, fuzzyResultsText.c_str());
     }
-
-    // Display fuzzy matches in the fuzzy results box
-    SetWindowTextW(hwndFuzzyResults, fuzzyResultsText.c_str());
+    else {
+        MessageBox(hwnd, L"FuzzyMatcher is not initialized!", L"Error", MB_ICONERROR);
+    }
 }
 
 void Screen2::highlightResults(HWND hwndResultsBox, const std::set<int>& matches, const InvertedIndex& index) {

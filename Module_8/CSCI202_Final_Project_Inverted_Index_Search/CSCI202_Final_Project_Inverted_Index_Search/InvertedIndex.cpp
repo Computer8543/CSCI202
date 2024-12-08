@@ -5,10 +5,12 @@
 */
 
 #include "InvertedIndex.h"
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <stdexcept>
+
 
 void InvertedIndex::addFile(const std::string& filePath) {
     std::ifstream file(filePath);
@@ -38,14 +40,32 @@ void InvertedIndex::addFile(const std::string& filePath) {
     file.close();
 }
 
-// Exact search
+// search for exact match
 std::set<int> InvertedIndex::search(const std::string& word) const {
-    auto it = index.find(word);
-    if (it != index.end()) {
-        return it->second; // Return the set of indices
+    if (word.empty()) {
+        throw std::invalid_argument("Search word cannot be empty.");
     }
-    return {}; // Return an empty set if the word is not found
+
+    if (index.empty()) {
+        throw std::runtime_error("Index is empty.");
+    }
+
+
+    auto it = index.find(word);
+
+    if (it != index.end()) {
+        // Validate the result
+        if (it->second.empty()) {
+            std::cerr << "Warning: Empty set for word '" << word << "'." << std::endl;
+        }
+        return it->second;
+    }
+
+    // Word not found
+    std::cerr << "Word not found in index: " << word << std::endl;
+    return {};
 }
+
 
 // Fuzzy search
 std::set<int> InvertedIndex::fuzzySearch(const std::string& query, int maxDistance) const {

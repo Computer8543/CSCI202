@@ -17,10 +17,10 @@ class InvertedIndex {
 private:
     // Map each word to a set of index numbers for uniqueness and fast lookups
     std::unordered_map<std::string, std::set<int>> index;
-    std::vector<std::string> documents;
-    std::vector<std::string> lines;                      // Store lines of the file
+    std::vector<std::string> lines; // Store lines of the file
 
 public:
+
     // Add file and populate the index
     void addFile(const std::string& filePath);
 
