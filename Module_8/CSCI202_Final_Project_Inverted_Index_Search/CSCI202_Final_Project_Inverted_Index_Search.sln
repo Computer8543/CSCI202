@@ -5,6 +5,11 @@ VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CSCI202_Final_Project_Inverted_Index_Search", "CSCI202_Final_Project_Inverted_Index_Search\CSCI202_Final_Project_Inverted_Index_Search.vcxproj", "{86BDE905-E4D7-4AC8-94EF-0B36615A262D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B38B509C-9757-4844-8CC2-E7C0132643E8}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
